@@ -12,12 +12,12 @@
 ## 2. Architecture & Environment
 The lab environment is built on an **In-the-middle Traffic Analysis** architecture. Security Onion acts as the routing Gateway, allowing the Blue Team to monitor all network traffic and enforce Containment measures at the network level without interacting directly with the compromised host.
 
-![Network Topology](DC-1/Images/0_Architecture/01_network_topology.png)
+![Network Topology](Images/0_Architecture/01_network_topology.png)
 
 The Wazuh Agent was successfully deployed on the DC-1 machine and actively forwarded logs to the SIEM (Security Onion).
 
-![Wazuh Agent Active](DC-1/Images/0_Architecture/02_wazuh_agent_active.png)
-![Kibana Agent Check](DC-1/Images/0_Architecture/03_kibana_agent_check.png)
+![Wazuh Agent Active](Images/0_Architecture/02_wazuh_agent_active.png)
+![Kibana Agent Check](Images/0_Architecture/03_kibana_agent_check.png)
 
 ---
 
@@ -39,51 +39,51 @@ The Wazuh Agent was successfully deployed on the DC-1 machine and actively forwa
 ### 4.1. Reconnaissance
 The attacker initiated a deep Nmap scan (`-sV -A`) to discover open ports and running services.
 
-![Nmap Scan](DC-1/Images/1_Attack_and_Detection/01_nmap_scan_version.png)
+![Nmap Scan](Images/1_Attack_and_Detection/01_nmap_scan_version.png)
 
 **SOC Detection:** The Wazuh Agent detected abnormal connection spikes, and Kibana successfully flagged the Nmap User-Agent.
 
-![Alert Nmap Kibana](DC-1/Images/1_Attack_and_Detection/02_alert_nmap_kibana.png)
+![Alert Nmap Kibana](Images/1_Attack_and_Detection/02_alert_nmap_kibana.png)
 
 ### 4.2. Exploitation & Establishing C2
 The attacker utilized the `exploit/unix/webapp/drupal_drupalgeddon2` module in Metasploit to compromise the server.
 
-![Metasploit Exploit](DC-1/Images/1_Attack_and_Detection/03_exploit_drupalgeddon2.png)
+![Metasploit Exploit](Images/1_Attack_and_Detection/03_exploit_drupalgeddon2.png)
 
 **SOC Detection:** Kibana logs revealed the DC-1 machine actively initiating a reverse connection (Reverse Shell) back to the attacker's IP on port 4444.
 
-![Alert Reverse Shell](DC-1/Images/1_Attack_and_Detection/04_alert_kibana_reverse_shell.png)
+![Alert Reverse Shell](Images/1_Attack_and_Detection/04_alert_kibana_reverse_shell.png)
 
 ### 4.3. Privilege Escalation & Defacement
 The attacker escalated privileges to root via the SUID vulnerability in the `find` command and subsequently defaced the website.
 
-![SUID Privilege Escalation](DC-1/Images/1_Attack_and_Detection/05_privesc_find_suid.png)
-![Web Defacement Command](DC-1/Images/1_Attack_and_Detection/08_attacker_echo_defacement.png)
-![Web Defacement Browser](DC-1/Images/1_Attack_and_Detection/09_browser_defacement_flag.png)
+![SUID Privilege Escalation](Images/1_Attack_and_Detection/05_privesc_find_suid.png)
+![Web Defacement Command](Images/1_Attack_and_Detection/08_attacker_echo_defacement.png)
+![Web Defacement Browser](Images/1_Attack_and_Detection/09_browser_defacement_flag.png)
 
 ### 4.4. Defense Evasion (Anti-Forensics) & Backdoors
 To cover their tracks, the attacker cleared the `/var/log/auth.log` file and created hidden rogue users (`hacker_lord`, `sys_update`) with root privileges (UID=0).
 
-![Create Rogue Users](DC-1/Images/1_Attack_and_Detection/06_attacker_create_rogue_users.png)
-![Clear Log](DC-1/Images/1_Attack_and_Detection/10_anti_forensics_clear_log.png)
+![Create Rogue Users](Images/1_Attack_and_Detection/06_attacker_create_rogue_users.png)
+![Clear Log](Images/1_Attack_and_Detection/10_anti_forensics_clear_log.png)
 
 **SOC Detection:** Squert immediately triggered two High-Priority alerts: a massive reduction in log file size and a CIS Benchmark violation (Detection of unauthorized UID 0 accounts).
 
-![Alert UID 0](DC-1/Images/1_Attack_and_Detection/07_alert_squert_uid0.png)
-![Alert Size Reduced](DC-1/Images/1_Attack_and_Detection/11_alert_squert_size_reduced.png)
+![Alert UID 0](Images/1_Attack_and_Detection/07_alert_squert_uid0.png)
+![Alert Size Reduced](Images/1_Attack_and_Detection/11_alert_squert_size_reduced.png)
 
 ### 4.5. Data Exfiltration
 The attacker prepared the sensitive `/etc/shadow` file by copying it into the web-accessible directory and modifying permissions.
 
-![Copy Shadow](DC-1/Images/1_Attack_and_Detection/14_cp_shadow.png)
+![Copy Shadow](Images/1_Attack_and_Detection/14_cp_shadow.png)
 
 Subsequently, the file was exfiltrated to the Kali machine using `wget`.
 
-![Wget Shadow](DC-1/Images/1_Attack_and_Detection/12_data_exfiltration_shadow.png)
+![Wget Shadow](Images/1_Attack_and_Detection/12_data_exfiltration_shadow.png)
 
 **SOC Detection:** The SIEM successfully detected the unique signature of the shadow file being transferred over unencrypted HTTP protocol.
 
-![Alert Shadow HTTP](DC-1/Images/1_Attack_and_Detection/13_alert_wazuh_shadow_http.png)
+![Alert Shadow HTTP](Images/1_Attack_and_Detection/13_alert_wazuh_shadow_http.png)
 
 ---
 
@@ -94,13 +94,13 @@ Since the system was fully compromised (Root access), the IR Team strictly follo
 ### 5.1. Attacker IP Blocking (Active Response)
 A command was pushed from Security Onion to the local Agent to block the attacker's IP.
 
-![Active Response Deny](DC-1/Images/2_Containment/01_active_response_deny.png)
+![Active Response Deny](Images/2_Containment/01_active_response_deny.png)
 
 ### 5.2. Total Host Quarantine (Network Isolation)
 Leveraging the Gateway architecture, the IR team configured `iptables` rules to DROP all inbound and outbound traffic for DC-1.
 
-![Iptables Block Inbound](DC-1/Images/2_Containment/02_iptables_block_inbound.png)
-![Iptables Block Outbound](DC-1/Images/2_Containment/03_iptables_block_outbound.png)
+![Iptables Block Inbound](Images/2_Containment/02_iptables_block_inbound.png)
+![Iptables Block Outbound](Images/2_Containment/03_iptables_block_outbound.png)
 
 ---
 
@@ -108,15 +108,15 @@ Leveraging the Gateway architecture, the IR team configured `iptables` rules to 
 After securing a snapshot of the machine, the IR team accessed the internal console of DC-1 to manually clean the malware and backdoors.
 
 *   **Removing Malicious Files:** Deleted the defaced `index.php` and the leaked `shadow.txt`.
-    *   ![Remove Deface](DC-1/Images/3_Eradication/01_remove_deface_index.png)
-    *   ![Remove Shadow Leak](DC-1/Images/3_Eradication/02_remove_shadow_leak.png)
+    *   ![Remove Deface](Images/3_Eradication/01_remove_deface_index.png)
+    *   ![Remove Shadow Leak](Images/3_Eradication/02_remove_shadow_leak.png)
 *   **Stripping SUID Permissions:**
-    *   ![Remove SUID](DC-1/Images/3_Eradication/04_remove_suid.png)
+    *   ![Remove SUID](Images/3_Eradication/04_remove_suid.png)
 *   **Removing Rogue Users:** Encountered an OS self-defense mechanism (Process 1 error) when attempting to use `userdel`. The team manually cleaned the `/etc/passwd` file and rebooted the system.
-    *   ![Find Rogue Users](DC-1/Images/3_Eradication/03_find_rogue_users.png)
-    *   ![Userdel Error PID 1](DC-1/Images/3_Eradication/05_userdel_pid1_error.png)
-    *   ![Manual Passwd Cleanup](DC-1/Images/3_Eradication/06_manual_passwd_cleanup.png)
-    *   ![System Reboot](DC-1/Images/3_Eradication/07_reboot.png)
+    *   ![Find Rogue Users](Images/3_Eradication/03_find_rogue_users.png)
+    *   ![Userdel Error PID 1](Images/3_Eradication/05_userdel_pid1_error.png)
+    *   ![Manual Passwd Cleanup](Images/3_Eradication/06_manual_passwd_cleanup.png)
+    *   ![System Reboot](Images/3_Eradication/07_reboot.png)
 
 ---
 
@@ -126,11 +126,11 @@ During this phase, the IR Team executed an "Air-gapped Patching" procedure to en
 
 | Step | Action | Technical Details | Evidence |
 | :---: | :--- | :--- | :--- |
-| **1** | **Prepare Patch** | Downloaded the CMS update and set up an internal Staging Server on Security Onion. | ![Stage Patch](DC-1/Images/4_Recovery/01_stage_patch_on_seconion.png) |
-| **2** | **Pull Patch Internally** | DC-1 fetched the patch from the Staging Server via the internal network. | ![Pull Patch](DC-1/Images/4_Recovery/02_pull_patch_to_dc1.png) |
-| **3** | **Extract Patch** | Extracted the updated source code locally. | ![Extract Patch](DC-1/Images/4_Recovery/03_extract_patch_file.png) |
-| **4** | **Restore Service** | Overwrote the web directory with the clean source code and restarted Apache2. | ![Restore Web](DC-1/Images/4_Recovery/04_restore_web_structure.png) |
-| **5** | **Reset Credentials** | Reset the Root password immediately to invalidate the stolen hashes. | ![Reset Password](DC-1/Images/4_Recovery/05_reset_root_password.png) |
-| **6** | **Network Unblocking** | Removed the `DROP` rules on the Gateway `iptables` to restore external access. | ![Unblock Firewall](DC-1/Images/4_Recovery/06_unblock_gateway_firewall.png) |
-| **7** | **Verification** | Verified that the website was functioning properly from an external network. | ![Verify Website](DC-1/Images/4_Recovery/07_verify_website_restored.png) |
-| **8** | **Hyper-Care Monitoring** | Created a dedicated Kibana Dashboard to closely monitor DC-1 post-incident. | ![Hyper Care](DC-1/Images/4_Recovery/08_hyper_care_monitoring.png) |
+| **1** | **Prepare Patch** | Downloaded the CMS update and set up an internal Staging Server on Security Onion. | ![Stage Patch](Images/4_Recovery/01_stage_patch_on_seconion.png) |
+| **2** | **Pull Patch Internally** | DC-1 fetched the patch from the Staging Server via the internal network. | ![Pull Patch](Images/4_Recovery/02_pull_patch_to_dc1.png) |
+| **3** | **Extract Patch** | Extracted the updated source code locally. | ![Extract Patch](Images/4_Recovery/03_extract_patch_file.png) |
+| **4** | **Restore Service** | Overwrote the web directory with the clean source code and restarted Apache2. | ![Restore Web](Images/4_Recovery/04_restore_web_structure.png) |
+| **5** | **Reset Credentials** | Reset the Root password immediately to invalidate the stolen hashes. | ![Reset Password](Images/4_Recovery/05_reset_root_password.png) |
+| **6** | **Network Unblocking** | Removed the `DROP` rules on the Gateway `iptables` to restore external access. | ![Unblock Firewall](Images/4_Recovery/06_unblock_gateway_firewall.png) |
+| **7** | **Verification** | Verified that the website was functioning properly from an external network. | ![Verify Website](Images/4_Recovery/07_verify_website_restored.png) |
+| **8** | **Hyper-Care Monitoring** | Created a dedicated Kibana Dashboard to closely monitor DC-1 post-incident. | ![Hyper Care](Images/4_Recovery/08_hyper_care_monitoring.png) |
