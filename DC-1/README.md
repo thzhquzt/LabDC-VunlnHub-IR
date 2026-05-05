@@ -134,3 +134,4 @@ During this phase, the IR Team executed an "Air-gapped Patching" procedure to en
 | **6** | **Network Unblocking** | Removed the `DROP` rules on the Gateway `iptables` to restore external access. | ![Unblock Firewall](Images/4_Recovery/06_unblock_gateway_firewall.png) |
 | **7** | **Verification** | Verified that the website was functioning properly from an external network. | ![Verify Website](Images/4_Recovery/07_verify_website_restored.png) |
 | **8** | **Hyper-Care Monitoring** | Created a dedicated Kibana Dashboard to closely monitor DC-1 post-incident. | ![Hyper Care](Images/4_Recovery/08_hyper_care_monitoring.png) |
+| **9** | **Post-Incident Retest** | Conducted a retest using the original Metasploit exploit (Drupalgeddon2). The system successfully repelled the attack, confirming the vulnerability is patched. | ![Retest Failed](./Images/4_Recovery/09_post_incident_retest_failed.png) |
